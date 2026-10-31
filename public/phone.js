@@ -67,7 +67,7 @@ let shockThreshold = 1.35; // Default: triggers on a slight jerk
 const SENSITIVITIES = {
   low: { threshold: 2.5, marker: '65%' },
   mid: { threshold: 1.8, marker: '45%' },
-  high: { threshold: 1.35, marker: '25%' }
+  high: { threshold: 0.5, marker: '25%' }
 };
 
 // ─── Gyro Aiming State ───────────────────────────────────────────────────────
