@@ -8,6 +8,15 @@ const qrcode = require('qrcode');
 const selfsigned = require('selfsigned');
 
 const app = express();
+
+// Force HTTPS in Cloud Production (ensures Android Chrome enables motion & gyro sensors)
+app.use((req, res, next) => {
+  if (IS_CLOUD && req.headers['x-forwarded-proto'] === 'http') {
+    return res.redirect(301, `https://${req.get('host')}${req.url}`);
+  }
+  next();
+});
+
 app.use(express.json({ limit: '25mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/assets', express.static(path.join(__dirname, 'public', 'assets')));

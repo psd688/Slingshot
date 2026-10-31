@@ -391,6 +391,20 @@ function armSlingshot() {
       sendAimSocket();
     }
   }, 40);
+
+  // Diagnostic check: alert if phone browser blocks motion sensors
+  setTimeout(() => {
+    if (isArmed && !hasFired && motionSampleCount === 0) {
+      if (sensorTipText) {
+        sensorTipText.textContent = '⚠️ Motion sensor not responding. Check Chrome: Settings > Site settings > Motion sensors';
+        sensorTipText.style.color = '#f59e0b';
+      }
+      if (permBtn) {
+        permBtn.classList.remove('hidden');
+        permBtn.textContent = '⚠️ Re-test Motion Sensors';
+      }
+    }
+  }, 1800);
 }
 
 function disarmSlingshot() {
@@ -404,24 +418,31 @@ function disarmSlingshot() {
 
 permBtn.addEventListener('click', async () => {
   try {
-    if (typeof DeviceMotionEvent.requestPermission === 'function') {
+    if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
       const motionPerm = await DeviceMotionEvent.requestPermission();
       if (motionPerm === 'granted') {
         permBtn.classList.add('hidden');
       }
     }
-    if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+    if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
       await DeviceOrientationEvent.requestPermission();
     }
     initMotionListeners();
+    sensorTipText.textContent = '🔄 Re-checking sensors... Move phone now';
   } catch (err) {
     console.error('Permission error', err);
+    alert('Sensor access notice: In Chrome, tap the tune/lock icon in the URL bar > Permissions > Motion sensors > Allow.');
   }
 });
 
 function initMotionListeners() {
+  window.removeEventListener('devicemotion', handleMotion);
+  window.removeEventListener('deviceorientation', handleOrientation);
+  window.removeEventListener('deviceorientationabsolute', handleOrientation);
+
   window.addEventListener('devicemotion', handleMotion, { passive: true });
   window.addEventListener('deviceorientation', handleOrientation, { passive: true });
+  window.addEventListener('deviceorientationabsolute', handleOrientation, { passive: true });
 }
 
 let motionSampleCount = 0;
@@ -569,12 +590,11 @@ function handleOrientation(event) {
   if (beta === null || gamma === null || isNaN(beta) || isNaN(gamma)) return;
 
   // ── Step 1: Auto-calibrate on first valid reading ──
-  if (!hasCalibrated && beta > 50 && beta < 100) {
-    refBeta = beta;
+  if (!hasCalibrated) {
+    refBeta = (beta > 35 && beta < 125) ? beta : 75;
     refGamma = gamma;
     hasCalibrated = true;
   }
-  if (!hasCalibrated) return;
 
   // ── Step 2: Delta from calibration reference ──
   const dGamma = gamma - refGamma; // degrees leaned left/right
