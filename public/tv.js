@@ -586,6 +586,11 @@ class SplatPhoto {
     this.birthTime = isHistorical ? Date.now() - 10000 : Date.now();
     this.hasPlayedGlideSound = isHistorical;
 
+    // Rolling Stream Fade & Life
+    this.opacity = 1.0;
+    this.departing = false;
+    this.dead = false;
+
     // Scale & Rotation
     this.featuredScale = 1.35;
     this.gridScale = 0.68;
@@ -593,7 +598,7 @@ class SplatPhoto {
     this.currentAngle = (Math.random() - 0.5) * 0.18;
     this.targetAngle = this.currentAngle;
 
-    // State: 'featured' -> 'migrating' -> 'in_grid'
+    // State: 'featured' -> 'migrating' -> 'in_grid' -> 'departing'
     this.state = isHistorical ? 'in_grid' : 'featured';
 
     this.gridX = x;
@@ -609,7 +614,23 @@ class SplatPhoto {
     }
   }
 
+  depart() {
+    if (this.departing) return;
+    this.departing = true;
+    this.state = 'departing';
+  }
+
   update(now, slotIndex) {
+    if (this.state === 'departing') {
+      this.opacity -= 0.025; // Smooth ~40-frame fade out (~0.65s)
+      this.currentScale += (0.20 - this.currentScale) * 0.08;
+      if (this.opacity <= 0) {
+        this.opacity = 0;
+        this.dead = true;
+      }
+      return;
+    }
+
     const age = now - this.birthTime;
 
     if (this.state === 'featured') {
@@ -651,6 +672,7 @@ class SplatPhoto {
     if (!this.imgLoaded && this.img) return;
 
     ctx.save();
+    ctx.globalAlpha = Math.max(0, Math.min(1, this.opacity));
     ctx.translate(this.currentX, this.currentY);
     ctx.rotate(this.currentAngle);
     ctx.scale(this.currentScale, this.currentScale);
@@ -779,6 +801,15 @@ class SplatPhoto {
   }
 }
 
+// Calculate Maximum Visible Grid Slots (Always 2 Rows of up to 8 Cards = 16 Slots)
+function getMaxGridSlots() {
+  const cardW = 145;
+  const marginX = 22;
+  const availableWidth = width - 120;
+  const cols = Math.min(8, Math.max(3, Math.floor(availableWidth / (cardW + marginX))));
+  return cols * 2;
+}
+
 // Calculate Grid Slot Position for Array of Photos
 function getGridSlotPosition(index) {
   const cardW = 145;
@@ -794,7 +825,7 @@ function getGridSlotPosition(index) {
   const lowerShelfOffset = Math.max(topOffset + cardH + 50, height * 0.58);
 
   const availableWidth = width - 120;
-  const cols = Math.max(3, Math.floor(availableWidth / (cardW + marginX)));
+  const cols = Math.min(8, Math.max(3, Math.floor(availableWidth / (cardW + marginX))));
 
   const col = index % cols;
   const row = Math.floor(index / cols);
@@ -817,11 +848,13 @@ function getGridSlotPosition(index) {
 }
 
 function recalculateGridSlots() {
-  photoGallery.forEach((photo, idx) => {
+  let slotIdx = 0;
+  photoGallery.forEach((photo) => {
     if (photo.state === 'in_grid') {
-      const slot = getGridSlotPosition(idx);
+      const slot = getGridSlotPosition(slotIdx);
       photo.gridX = slot.x;
       photo.gridY = slot.y;
+      slotIdx++;
     }
   });
 }
@@ -1010,11 +1043,39 @@ function animate() {
     if (s.dead) activeSplatters.splice(i, 1);
   }
 
-  // 2. Update & Draw Dynamic Photo Gallery (Featured Photo + Animated Grid)
-  photoGallery.forEach((photo, idx) => {
-    photo.update(now, idx);
+  // 2. Update & Draw Dynamic Photo Gallery (Featured Photo + Animated Rolling Stream Grid)
+  const maxSlots = getMaxGridSlots();
+
+  // If active non-departing grid/migrating photos exceed capacity, depart the oldest
+  const activeGridPhotos = photoGallery.filter(p => !p.departing && p.state !== 'featured');
+  if (activeGridPhotos.length > maxSlots) {
+    const excess = activeGridPhotos.length - maxSlots;
+    for (let e = 0; e < excess; e++) {
+      if (activeGridPhotos[e]) {
+        activeGridPhotos[e].depart();
+      }
+    }
+  }
+
+  // Remove fully departed dead photos
+  for (let i = photoGallery.length - 1; i >= 0; i--) {
+    if (photoGallery[i].dead) {
+      photoGallery.splice(i, 1);
+    }
+  }
+
+  // Assign sequential slot indexes for non-departing, non-featured photos
+  let currentGridSlot = 0;
+  for (let i = 0; i < photoGallery.length; i++) {
+    const photo = photoGallery[i];
+    if (photo.state === 'featured' || photo.state === 'departing') {
+      photo.update(now, 0);
+    } else {
+      photo.update(now, currentGridSlot);
+      currentGridSlot++;
+    }
     photo.draw(fxCtx, now);
-  });
+  }
 
   // 3. Draw Smoke & Splash Explosion Particles (Overlays the photos!)
   for (let i = activeParticles.length - 1; i >= 0; i--) {
@@ -1224,11 +1285,18 @@ socket.on('splash_hit', (splashData) => {
   activeProjectiles.push(new Projectile(targetPixelX, targetPixelY, splashData.color, splashData));
 });
 
-// Restore previous history on page reload (with strict deduplication against reconnects)
+// Restore previous history on page reload (loads latest visible capacity, keeps total counter)
 socket.on('init_history', (historyList) => {
   if (Array.isArray(historyList) && historyList.length > 0) {
+    const maxSlots = getMaxGridSlots();
+    splatCount = historyList.length;
+    if (splatCountEl) splatCountEl.textContent = splatCount;
+
+    // Load only the most recent maxSlots photos into the visible grid
+    const recentHistory = historyList.slice(-maxSlots);
     const existingIds = new Set(photoGallery.map(p => p.id));
-    historyList.forEach((item) => {
+
+    recentHistory.forEach((item) => {
       if (!item) return;
       const itemId = item.id;
       if (itemId && existingIds.has(itemId)) {
@@ -1237,8 +1305,7 @@ socket.on('init_history', (historyList) => {
       photoGallery.push(new SplatPhoto(item.targetX * width, item.targetY * height, item.color, item, true));
       if (itemId) existingIds.add(itemId);
     });
-    splatCount = photoGallery.length;
-    if (splatCountEl) splatCountEl.textContent = splatCount;
+
     recalculateGridSlots();
   }
 });
