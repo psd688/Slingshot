@@ -62,11 +62,12 @@ let hasFired = false;
 let stream = null;
 
 let prevAcc = 0;
-let shockThreshold = 4.2; // Default Medium threshold in Gs
+let armTimestamp = 0;
+let shockThreshold = 1.35; // Default: triggers on a slight jerk
 const SENSITIVITIES = {
-  low: { threshold: 6.5, marker: '70%' },
-  mid: { threshold: 4.2, marker: '50%' },
-  high: { threshold: 2.6, marker: '30%' }
+  low: { threshold: 2.5, marker: '65%' },
+  mid: { threshold: 1.8, marker: '45%' },
+  high: { threshold: 1.35, marker: '25%' }
 };
 
 // ─── Gyro Aiming State ───────────────────────────────────────────────────────
@@ -357,6 +358,7 @@ let aimInterval = null;
 function armSlingshot() {
   isArmed = true;
   hasFired = false;
+  armTimestamp = Date.now();
   prevAcc = 0;
   slingshotPellet.style.borderColor = selectedColor;
   slingshotPellet.style.boxShadow = `0 0 35px ${selectedColor}`;
@@ -427,20 +429,25 @@ let motionSampleCount = 0;
 // Accelerometer Motion Shockwave Detection
 function handleMotion(event) {
   if (!isArmed || hasFired) return;
+  // Ignore motion during the first 350ms of arming to ignore button press tap
+  if (Date.now() - armTimestamp < 350) return;
 
   let ax = null, ay = null, az = null;
+  let hasLinearAcc = false;
 
-  // Check linear acceleration first
+  // Check linear acceleration first (most responsive & isolates hand jerk from gravity)
   if (event.acceleration && typeof event.acceleration.x === 'number') {
     ax = event.acceleration.x;
     ay = event.acceleration.y;
     az = event.acceleration.z;
+    hasLinearAcc = true;
   }
-  // Fallback to acceleration with gravity (supported by virtually 100% of smartphones)
-  if (ax === null && event.accelerationIncludingGravity && typeof event.accelerationIncludingGravity.x === 'number') {
+  // Fallback to acceleration with gravity (supported by 100% of smartphones)
+  if ((ax === null || isNaN(ax)) && event.accelerationIncludingGravity && typeof event.accelerationIncludingGravity.x === 'number') {
     ax = event.accelerationIncludingGravity.x;
     ay = event.accelerationIncludingGravity.y;
     az = event.accelerationIncludingGravity.z;
+    hasLinearAcc = false;
   }
 
   // If both are unavailable or null
@@ -451,21 +458,24 @@ function handleMotion(event) {
   // Total instantaneous acceleration magnitude in Gs (1G ~ 9.8m/s^2)
   const totalAcc = Math.sqrt(ax * ax + ay * ay + az * az) / 9.8;
 
-  // Jerk / Shock impulse (rate of change between consecutive sensor samples)
-  const shock = prevAcc === 0 ? 0 : Math.abs(totalAcc - prevAcc);
+  // Rate of change between consecutive sensor samples
+  const delta = prevAcc === 0 ? 0 : Math.abs(totalAcc - prevAcc);
   prevAcc = totalAcc;
 
+  // For linear acceleration, either a sudden spike or a fast delta indicates a jerk
+  const shock = hasLinearAcc ? Math.max(totalAcc, delta) : delta;
+
   // Update visual G-force meter
-  const meterPercent = Math.min(100, (shock / 6) * 100);
+  const meterPercent = Math.min(100, (shock / 3.5) * 100);
   meterFill.style.width = `${meterPercent}%`;
   gForceVal.textContent = `${shock.toFixed(1)} G`;
 
   // Update status tip text
-  sensorTipText.textContent = `Live: ${shock.toFixed(1)}G (Peak needed: ${shockThreshold}G) • Sensor Active ✅`;
+  sensorTipText.textContent = `Live: ${shock.toFixed(1)}G (Needed: ${shockThreshold}G) • Slight Jerk Enabled 🎯`;
 
   // Check if shockwave exceeded sensitivity threshold!
   if (shock >= shockThreshold) {
-    triggerLaunch(shock);
+    triggerLaunch(Math.max(3.5, shock * 2.2));
   }
 }
 
