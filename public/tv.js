@@ -573,7 +573,7 @@ class SplashBurstParticle {
 // -------------------------------------------------------------
 class SplatPhoto {
   constructor(x, y, color, payload, isHistorical = false) {
-    this.id = payload.id || 'photo_' + Date.now();
+    this.id = (payload && payload.id) ? payload.id : ('photo_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5));
     this.splatX = x;
     this.splatY = y;
     this.currentX = x;
@@ -968,6 +968,11 @@ class SplatterDecal {
 
 // Impact Trigger
 function triggerImpact(x, y, color, payload) {
+  // Guard against duplicate impact triggers for the same photo ID
+  if (payload && payload.id && photoGallery.some(p => p.id === payload.id)) {
+    return;
+  }
+
   // Flash effect
   screenFlash.classList.add('active');
   setTimeout(() => screenFlash.classList.remove('active'), 100);
@@ -984,7 +989,7 @@ function triggerImpact(x, y, color, payload) {
   const newPhoto = new SplatPhoto(x, y, color, payload);
   photoGallery.push(newPhoto);
 
-  splatCount++;
+  splatCount = photoGallery.length;
   if (splatCountEl) splatCountEl.textContent = splatCount;
 }
 
@@ -1219,14 +1224,22 @@ socket.on('splash_hit', (splashData) => {
   activeProjectiles.push(new Projectile(targetPixelX, targetPixelY, splashData.color, splashData));
 });
 
-// Restore previous history on page reload
+// Restore previous history on page reload (with strict deduplication against reconnects)
 socket.on('init_history', (historyList) => {
-  if (historyList && historyList.length > 0) {
+  if (Array.isArray(historyList) && historyList.length > 0) {
+    const existingIds = new Set(photoGallery.map(p => p.id));
     historyList.forEach((item) => {
+      if (!item) return;
+      const itemId = item.id;
+      if (itemId && existingIds.has(itemId)) {
+        return; // Already in gallery! Skip duplicate
+      }
       photoGallery.push(new SplatPhoto(item.targetX * width, item.targetY * height, item.color, item, true));
-      splatCount++;
+      if (itemId) existingIds.add(itemId);
     });
+    splatCount = photoGallery.length;
     if (splatCountEl) splatCountEl.textContent = splatCount;
+    recalculateGridSlots();
   }
 });
 
