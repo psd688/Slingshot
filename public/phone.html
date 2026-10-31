@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Slingshot Controller</title>
+  <link rel="stylesheet" href="phone.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Outfit:wght@400;600;800;900&display=swap" rel="stylesheet">
+  <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+  <div class="phone-app">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="header-logo">
+        <span class="logo-icon">🎯</span>
+        <span class="logo-text">SLINGSHOT</span>
+      </div>
+      <div class="header-status" id="phoneConnStatus">
+        <span class="status-indicator"></span>
+        <span id="phoneConnText">Connecting</span>
+      </div>
+    </header>
+
+    <!-- HTTPS Warning Banner (Mobile browsers block sensors on plain HTTP) -->
+    <div id="httpWarningBanner" class="hidden" style="background:#ff3b30; color:#fff; padding:10px 14px; border-radius:12px; margin-top:10px; font-size:0.8rem; line-height:1.4;">
+      ⚠️ <b>Motion Sensors Blocked by Browser:</b> You are on <code>http://</code>. Mobile browsers require <b>HTTPS</b> to enable motion sensors. 
+      <a id="switchToHttpsLink" href="#" style="color:#ffdd00; font-weight:800; display:block; margin-top:4px;">➔ Tap here to switch to HTTPS</a>
+    </div>
+
+    <!-- STEP 1: SELFIE CAMERA -->
+    <section id="stepPhoto" class="step-panel active">
+      <div class="step-badge">STEP 1 OF 3</div>
+      <h2 class="step-title">Take Your Selfie</h2>
+      <p class="step-sub">This will appear inside the paintball splash!</p>
+
+      <div class="camera-card">
+        <div class="camera-viewfinder" id="viewfinder">
+          <video id="cameraVideo" autoplay playsinline muted></video>
+          <img id="photoCaptured" alt="Captured Selfie" class="hidden">
+          <canvas id="photoCanvas" class="hidden"></canvas>
+          <div class="viewfinder-overlay" id="viewfinderOverlay">
+            <div class="crosshairs"></div>
+            <div class="camera-guide-text">Position face here</div>
+          </div>
+        </div>
+
+        <div class="camera-controls">
+          <button id="snapBtn" class="btn btn-primary btn-large">📸 SNAP PHOTO</button>
+          <div class="photo-alt-row">
+            <button id="retakeBtn" class="btn btn-secondary hidden">🔄 Retake</button>
+            <label class="btn btn-ghost" for="fileInput">
+              📁 Upload / Gallery
+              <input type="file" id="fileInput" accept="image/*" capture="user" style="display:none">
+            </label>
+          </div>
+          <button id="nextToStep2Btn" class="btn btn-success btn-large hidden">PROCEED TO TAG ➔</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- STEP 2: USER DETAILS & PAINT COLOR -->
+    <section id="stepCustomize" class="step-panel">
+      <div class="step-badge">STEP 2 OF 3</div>
+      <h2 class="step-title">Your Details & Paint</h2>
+
+      <div class="input-card">
+        <!-- 1. Name -->
+        <label class="input-label" for="nameInput">1. YOUR NAME</label>
+        <input type="text" id="nameInput" class="text-input" placeholder="e.g. Rahul Sharma" maxlength="28" autocomplete="name">
+
+        <!-- 2. Firm / Company Name -->
+        <label class="input-label" for="companyInput" style="margin-top: 14px;">2. FIRM / COMPANY NAME</label>
+        <input type="text" id="companyInput" class="text-input" placeholder="e.g. PI Industries / ABC Corp" maxlength="32" autocomplete="organization">
+
+        <!-- 3. Short Message -->
+        <label class="input-label" for="messageInput" style="margin-top: 14px;">3. SHORT MESSAGE</label>
+        <input type="text" id="messageInput" class="text-input" placeholder="e.g. Innovating for tomorrow! 🚀" maxlength="40">
+
+        <div class="quick-tags">
+          <button type="button" class="chip" data-text="Innovating for the Future 🚀">🚀 Innovating</button>
+          <button type="button" class="chip" data-text="Proud to be Here! ✨">✨ Proud</button>
+          <button type="button" class="chip" data-text="VIP Squad 🌟">🌟 VIP Squad</button>
+          <button type="button" class="chip" data-text="Bullseye! 🎯">🎯 Bullseye</button>
+        </div>
+
+        <!-- Slingshot Pellet Badge -->
+        <div class="pellet-badge" style="margin-top: 18px; padding: 12px 14px; border-radius: 14px; background: rgba(56, 189, 248, 0.15); border: 1.5px solid rgba(56, 189, 248, 0.35); display: flex; align-items: center; justify-content: center; gap: 10px;">
+          <span style="font-size: 1.2rem;">🎯</span>
+          <span style="font-size: 0.85rem; font-weight: 900; letter-spacing: 1.2px; color: #38bdf8; text-transform: uppercase;">READY TO SLINGSHOT</span>
+        </div>
+
+        <div class="step-nav-row">
+          <button id="backToStep1Btn" class="btn btn-secondary">⬅ Back</button>
+          <button id="readyToSlingshotBtn" class="btn btn-primary btn-large">LOCK & LOAD 🏹</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- STEP 3: SLINGSHOT ARMED & MOTION SENSOR -->
+    <section id="stepArmed" class="step-panel">
+      <div class="armed-header">
+        <div class="armed-badge">🟢 ARMED & READY</div>
+        <h2 class="armed-title">Aim & Release!</h2>
+        <p class="armed-sub">Aim slingshot at the screen, pull the rubber band and let it snap!</p>
+      </div>
+
+      <!-- Aim Radar & Slingshot Touchpad -->
+      <div class="aim-container">
+        <div class="radar-card" id="radarCard">
+          <div class="radar-header">
+            <span>🎯 TV AIM RADAR</span>
+            <span class="radar-mode-tag">TILT OR DRAG TO AIM</span>
+          </div>
+          <div class="radar-screen" id="radarScreen">
+            <div class="radar-grid-h"></div>
+            <div class="radar-grid-v"></div>
+            <div class="radar-dot" id="radarDot"></div>
+          </div>
+        </div>
+
+        <!-- Live Slingshot Pellet Preview / Touch Aim Pad -->
+        <div class="slingshot-preview-container" id="aimTouchPad">
+          <div class="slingshot-pellet" id="slingshotPellet">
+            <img id="pelletPhoto" alt="Pellet">
+            <div class="pellet-glow"></div>
+          </div>
+          <div class="band-left"></div>
+          <div class="band-right"></div>
+        </div>
+      </div>
+
+      <!-- Real-time Shockwave / G-Force Sensor Meter -->
+      <div class="sensor-card">
+        <div class="sensor-title-row">
+          <span>⚡ ACCELERATION SHOCK METER</span>
+          <span id="gForceVal" class="sensor-readout">0.0 G</span>
+        </div>
+        
+        <div class="meter-bar-track">
+          <div class="meter-bar-fill" id="meterFill"></div>
+          <div class="meter-threshold-marker" id="thresholdMarker"></div>
+        </div>
+
+        <div class="sensor-tips" id="sensorTipText">
+          Release rubber band to create snap shockwave
+        </div>
+
+        <!-- Sensitivity selector -->
+        <div class="sensitivity-row">
+          <span class="sens-label">Sensitivity:</span>
+          <button class="sens-btn" data-sens="low">Low (Hard)</button>
+          <button class="sens-btn active" data-sens="mid">Medium</button>
+          <button class="sens-btn" data-sens="high">High (Sensitive)</button>
+        </div>
+
+        <!-- Aim Height Offset Selector -->
+        <div class="sensitivity-row" style="margin-top: 10px;">
+          <span class="sens-label">Aim Height:</span>
+          <button class="aim-offset-btn" data-offset="0.30">Lower ▼</button>
+          <button class="aim-offset-btn active" data-offset="0.20">Default (Low)</button>
+          <button class="aim-offset-btn" data-offset="0.08">Higher ▲</button>
+        </div>
+
+        <!-- Aim Motion Sweep / Sensitivity -->
+        <div class="sensitivity-row" style="margin-top: 10px;">
+          <span class="sens-label">Aim Motion:</span>
+          <button class="aim-sens-btn" data-rangex="115" data-rangey="115">More Tilt</button>
+          <button class="aim-sens-btn active" data-rangex="85" data-rangey="90">Normal (Wide)</button>
+          <button class="aim-sens-btn" data-rangex="55" data-rangey="65">Sensitive</button>
+        </div>
+
+        <!-- Invert Axis Controls -->
+        <div class="sensitivity-row" style="margin-top: 10px;">
+          <span class="sens-label">Invert Axis:</span>
+          <button id="toggleInvertXBtn" class="axis-btn">↔ Invert Left/Right</button>
+          <button id="toggleInvertYBtn" class="axis-btn">↕ Invert Up/Down</button>
+        </div>
+
+        <!-- iOS Permission Button if needed -->
+        <button id="permBtn" class="btn btn-ghost hidden" style="margin-top: 10px; width: 100%;">
+          🔓 Enable Motion Sensors (iOS)
+        </button>
+      </div>
+
+      <!-- Calibrate & Manual Fire Controls -->
+      <div class="action-buttons-grid">
+        <button id="calibrateBtn" class="btn btn-secondary">🎯 Center Aim</button>
+        <button id="manualFireBtn" class="btn btn-fire">💥 TAP TO TEST FIRE</button>
+      </div>
+    </section>
+
+    <!-- STEP 4: FIRED / CELEBRATION -->
+    <section id="stepFired" class="step-panel">
+      <div class="fired-card">
+        <div class="fired-icon">💥</div>
+        <h2 class="fired-title">SPLASH LAUNCHED!</h2>
+        <p class="fired-sub">Look at the big screen to see your paintball splatter!</p>
+        <button id="shootAgainBtn" class="btn btn-primary btn-large" style="margin-top: 30px;">
+          🏹 NEXT PLAYER / SHOOT AGAIN
+        </button>
+      </div>
+    </section>
+  </div>
+
+  <script src="phone.js?v=3.8"></script>
+</body>
+</html>

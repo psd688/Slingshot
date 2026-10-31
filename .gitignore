@@ -1,0 +1,8 @@
+node_modules
+bin
+*.rar
+*.zip
+*.pdf
+pdf_extracted
+.DS_Store
+Thumbs.db

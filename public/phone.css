@@ -1,0 +1,691 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body, html {
+  width: 100%;
+  height: 100%;
+  background-color: #0b0e14;
+  font-family: 'Outfit', sans-serif;
+  color: #fff;
+  user-select: none;
+  overflow-x: hidden;
+}
+
+.phone-app {
+  max-width: 480px;
+  min-height: 100vh;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  background: radial-gradient(circle at 50% 0%, #1a2233 0%, #0b0e14 100%);
+}
+
+/* Header */
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.header-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.logo-icon {
+  font-size: 1.6rem;
+}
+
+.logo-text {
+  font-weight: 900;
+  font-size: 1.2rem;
+  letter-spacing: 2px;
+  background: linear-gradient(90deg, #ff007f, #ffdd00);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.header-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #94a3b8;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+
+.status-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ffaa00;
+}
+
+.status-indicator.online {
+  background: #00ffaa;
+  box-shadow: 0 0 8px #00ffaa;
+}
+
+/* Steps System */
+.step-panel {
+  display: none;
+  flex-direction: column;
+  flex: 1;
+  padding-top: 16px;
+  animation: fadeIn 0.3s ease;
+}
+
+.step-panel.active {
+  display: flex;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.step-badge {
+  display: inline-block;
+  align-self: flex-start;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  color: #ff007f;
+  background: rgba(255, 0, 127, 0.12);
+  padding: 4px 10px;
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
+
+.step-title {
+  font-size: 1.6rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.step-sub {
+  font-size: 0.85rem;
+  color: #94a3b8;
+  margin-bottom: 16px;
+}
+
+/* Camera Card */
+.camera-card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  flex: 1;
+}
+
+.camera-viewfinder {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  max-height: 380px;
+  background: #000;
+  border-radius: 24px;
+  overflow: hidden;
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#cameraVideo, #photoCaptured {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1); /* Mirror selfie */
+}
+
+.viewfinder-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  padding-bottom: 16px;
+  pointer-events: none;
+}
+
+.crosshairs {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 70%;
+  height: 70%;
+  border: 2px dashed rgba(255, 255, 255, 0.4);
+  border-radius: 50%;
+}
+
+.camera-guide-text {
+  font-size: 0.75rem;
+  color: #fff;
+  background: rgba(0,0,0,0.6);
+  padding: 4px 12px;
+  border-radius: 12px;
+  letter-spacing: 0.5px;
+}
+
+.camera-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.photo-alt-row {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+/* Buttons */
+.btn {
+  border: none;
+  border-radius: 14px;
+  font-family: inherit;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s;
+  text-decoration: none;
+}
+
+.btn-large {
+  padding: 16px 20px;
+  font-size: 1.05rem;
+  letter-spacing: 1px;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #ff007f, #ff5500);
+  color: #fff;
+  box-shadow: 0 6px 20px rgba(255, 0, 127, 0.4);
+}
+
+.btn-primary:active {
+  transform: scale(0.98);
+}
+
+.btn-success {
+  background: linear-gradient(135deg, #00ffaa, #00b377);
+  color: #0b0e14;
+  box-shadow: 0 6px 20px rgba(0, 255, 170, 0.4);
+}
+
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  padding: 12px 18px;
+  font-size: 0.9rem;
+}
+
+.btn-ghost {
+  background: transparent;
+  color: #94a3b8;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  padding: 12px 18px;
+  font-size: 0.85rem;
+}
+
+.btn-fire {
+  background: linear-gradient(135deg, #ff3b30, #ff9500);
+  color: #fff;
+  padding: 16px;
+  font-size: 1rem;
+  letter-spacing: 1px;
+  box-shadow: 0 6px 25px rgba(255, 59, 48, 0.5);
+  animation: pulseFire 1.8s infinite;
+}
+
+@keyframes pulseFire {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* Step 2: Customization Inputs */
+.input-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.input-label {
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  color: #94a3b8;
+  margin-bottom: 8px;
+}
+
+.text-input {
+  background: #141a29;
+  border: 2px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  padding: 14px 16px;
+  color: #fff;
+  font-size: 1.1rem;
+  font-weight: 700;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.text-input:focus {
+  border-color: #ff007f;
+}
+
+.quick-tags {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
+.chip {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #cbd5e1;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.chip:active {
+  background: rgba(255, 0, 127, 0.3);
+}
+
+.color-palette {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.color-swatch {
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--c);
+  border: 3px solid transparent;
+  cursor: pointer;
+  transition: transform 0.2s, border-color 0.2s;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+}
+
+.color-swatch.active {
+  transform: scale(1.18);
+  border-color: #ffffff;
+  box-shadow: 0 0 15px var(--c);
+}
+
+.step-nav-row {
+  display: flex;
+  gap: 12px;
+  margin-top: 30px;
+}
+
+.step-nav-row .btn-large {
+  flex: 1;
+}
+
+/* Step 3: Armed & Motion Sensor */
+.armed-header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.armed-badge {
+  display: inline-block;
+  background: #00ffaa;
+  color: #0b0e14;
+  font-size: 0.75rem;
+  font-weight: 900;
+  letter-spacing: 2px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  box-shadow: 0 0 15px rgba(0, 255, 170, 0.5);
+  margin-bottom: 8px;
+}
+
+.armed-title {
+  font-size: 1.8rem;
+  font-weight: 900;
+}
+
+.armed-sub {
+  font-size: 0.85rem;
+  color: #94a3b8;
+  max-width: 320px;
+  margin: 4px auto 0;
+}
+
+/* Aim Container & Radar Screen */
+.aim-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.radar-card {
+  background: rgba(16, 22, 35, 0.95);
+  border: 1px solid rgba(0, 255, 204, 0.25);
+  border-radius: 14px;
+  padding: 10px 14px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+}
+
+.radar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: #00ffcc;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+}
+
+.radar-mode-tag {
+  font-size: 0.65rem;
+  color: #94a3b8;
+  background: rgba(255,255,255,0.08);
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+.radar-screen {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: #090c13;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: crosshair;
+}
+
+.radar-grid-h {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background: rgba(0, 255, 204, 0.15);
+}
+
+.radar-grid-v {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 1px;
+  height: 100%;
+  background: rgba(0, 255, 204, 0.15);
+}
+
+.radar-dot {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 14px;
+  height: 14px;
+  background: #ff0055;
+  border: 2px solid #ffffff;
+  border-radius: 50%;
+  box-shadow: 0 0 10px #ff0055, 0 0 20px #ff0055;
+  pointer-events: none;
+  transition: transform 0.05s ease;
+}
+
+.slingshot-preview-container {
+  position: relative;
+  width: 100%;
+  height: 160px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: none; /* Allows smooth drag-to-aim */
+}
+
+.slingshot-pellet {
+  position: relative;
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 4px solid #ff007f;
+  box-shadow: 0 0 30px #ff007f;
+  z-index: 5;
+  background: #141a29;
+  animation: floatPellet 2.5s infinite ease-in-out;
+}
+
+@keyframes floatPellet {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+.slingshot-pellet img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1);
+}
+
+.band-left, .band-right {
+  position: absolute;
+  top: 50%;
+  height: 6px;
+  background: linear-gradient(90deg, #64748b, #cbd5e1);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.6);
+  z-index: 2;
+}
+
+.band-left {
+  left: 10px;
+  right: 50%;
+  transform: translateY(-50%) rotate(12deg);
+}
+
+.band-right {
+  right: 10px;
+  left: 50%;
+  transform: translateY(-50%) rotate(-12deg);
+}
+
+/* Sensor Shock Meter Card */
+.sensor-card {
+  background: rgba(20, 26, 41, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 18px;
+  padding: 16px;
+  margin-bottom: 20px;
+}
+
+.sensor-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  color: #94a3b8;
+  margin-bottom: 10px;
+}
+
+.sensor-readout {
+  color: #00ffaa;
+  font-size: 0.95rem;
+  font-weight: 900;
+}
+
+.meter-bar-track {
+  position: relative;
+  width: 100%;
+  height: 22px;
+  background: #0c1017;
+  border-radius: 11px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.meter-bar-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #00b377, #ffaa00, #ff0055);
+  transition: width 0.05s linear;
+}
+
+.meter-threshold-marker {
+  position: absolute;
+  top: 0;
+  left: 55%; /* Default threshold position */
+  width: 3px;
+  height: 100%;
+  background: #ffffff;
+  box-shadow: 0 0 8px #ffffff;
+}
+
+.sensor-tips {
+  font-size: 0.75rem;
+  color: #64748b;
+  text-align: center;
+  margin-top: 10px;
+}
+
+.sensor-tips.snap-detected {
+  color: #00ffaa;
+  font-weight: 800;
+  animation: flashText 0.3s infinite;
+}
+
+@keyframes flashText {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+.sensitivity-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.sens-label {
+  font-size: 0.75rem;
+  color: #94a3b8;
+}
+
+.sens-btn {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #cbd5e1;
+  padding: 6px;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.sens-btn.active {
+  background: #ff007f;
+  color: #fff;
+  border-color: #ff007f;
+}
+
+.aim-offset-btn,
+.aim-sens-btn,
+.axis-btn {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #cbd5e1;
+  padding: 6px;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.aim-offset-btn.active,
+.aim-sens-btn.active {
+  background: #00d2ff;
+  color: #0b0e14;
+  border-color: #00d2ff;
+  box-shadow: 0 0 10px rgba(0, 210, 255, 0.35);
+}
+
+.axis-btn.active {
+  background: #ff5500;
+  color: #fff;
+  border-color: #ff5500;
+  box-shadow: 0 0 10px rgba(255, 85, 0, 0.35);
+}
+
+.action-buttons-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Step 4: Fired */
+.fired-card {
+  text-align: center;
+  margin: auto;
+  padding: 30px 20px;
+}
+
+.fired-icon {
+  font-size: 4.5rem;
+  animation: bounceImpact 0.6s ease;
+}
+
+@keyframes bounceImpact {
+  0% { transform: scale(0.3); }
+  60% { transform: scale(1.3); }
+  100% { transform: scale(1); }
+}
+
+.fired-title {
+  font-size: 2rem;
+  font-weight: 900;
+  background: linear-gradient(90deg, #ff007f, #00ffaa);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-top: 12px;
+}
+
+.fired-sub {
+  font-size: 0.95rem;
+  color: #94a3b8;
+  margin-top: 8px;
+}

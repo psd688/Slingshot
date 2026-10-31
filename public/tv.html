@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Slingshot Paintball Wall - LED HDMI Display</title>
+  <link rel="stylesheet" href="tv.css?v=3.6">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Outfit:wght@400;700;900&display=swap"
+    rel="stylesheet">
+  <script src="/socket.io/socket.io.js"></script>
+</head>
+
+<body>
+  <!-- Background Canvas for Wall & Splats -->
+  <canvas id="wallCanvas"></canvas>
+  <!-- Foreground Canvas for Projectiles, Laser Reticle & Active Splash Animation -->
+  <canvas id="fxCanvas"></canvas>
+
+  <!-- Top Branding: Pixazon & Silver Molecule on Top Left, PI Logo on Top Right -->
+  <header class="branding-header">
+    <div class="logo-top-left-group">
+      <img src="assets/pixazon_logo_clean.png" alt="Pixazon Logo" class="brand-logo pixazon-logo">
+      <img src="assets/silver.png" alt="India's 1st Discovered Molecule" class="brand-logo silver-logo">
+    </div>
+    <div class="logo-top-right">
+      <img src="assets/pi_logo_clean.png" alt="PI Logo" class="brand-logo pi-logo">
+    </div>
+  </header>
+
+  <!-- Center Top Headline Text -->
+  <div class="center-screen-text">
+    <h1 class="center-headline">
+      <span>AN INNOVATION FROM INDIA,</span>
+      <span>TO THE WORLD</span>
+    </h1>
+  </div>
+
+  <!-- Real-time Live Red Dot Laser Pointer (From Phone Gyroscope) -->
+  <div id="aimReticle" class="aim-reticle">
+    <div class="laser-flare-halo"></div>
+    <div class="laser-pulse-ring"></div>
+    <div class="laser-crosshair laser-ch-h"></div>
+    <div class="laser-crosshair laser-ch-v"></div>
+    <div class="laser-ring"></div>
+    <div class="laser-dot"></div>
+  </div>
+
+  <!-- Flash effect on impact -->
+  <div id="screenFlash" class="screen-flash"></div>
+
+  <!-- Bottom Right Corner: Clean Wall Button -->
+  <div class="bottom-right-controls">
+    <button id="clearBtn" class="clear-wall-btn" title="Clean all splashed images from the wall (Hotkey: C)">
+      <span class="btn-icon">🧹</span>
+      <span class="btn-text">CLEAN WALL</span>
+    </button>
+  </div>
+
+  <script src="tv.js?v=3.7"></script>
+</body>
+
+</html>

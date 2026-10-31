@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Slingshot Interactive System - Operator Hub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800;900&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #0b0e14;
+      font-family: 'Outfit', sans-serif;
+      color: #fff;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 30px 20px;
+      background: radial-gradient(circle at 50% 20%, #1c263d 0%, #0b0e14 100%);
+    }
+
+    .container {
+      max-width: 900px;
+      width: 100%;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .title {
+      font-size: 2.8rem;
+      font-weight: 900;
+      letter-spacing: 2px;
+      background: linear-gradient(90deg, #ff007f, #ff5500, #ffdd00);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      font-size: 1.1rem;
+      color: #94a3b8;
+    }
+
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+      gap: 24px;
+      margin-bottom: 30px;
+    }
+
+    .card {
+      background: rgba(22, 29, 44, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      padding: 28px;
+      display: flex;
+      flex-direction: column;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+
+    .card-icon {
+      font-size: 2.6rem;
+      margin-bottom: 12px;
+    }
+
+    .card h2 {
+      font-size: 1.5rem;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+
+    .card p {
+      color: #94a3b8;
+      font-size: 0.95rem;
+      line-height: 1.5;
+      margin-bottom: 20px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 14px 24px;
+      border-radius: 12px;
+      font-weight: 800;
+      font-size: 1rem;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-tv {
+      background: linear-gradient(135deg, #00ffaa, #00a86b);
+      color: #0b0e14;
+      box-shadow: 0 6px 20px rgba(0, 255, 170, 0.4);
+      margin-top: auto;
+    }
+
+    .btn-tv:hover {
+      transform: scale(1.02);
+      box-shadow: 0 8px 25px rgba(0, 255, 170, 0.6);
+    }
+
+    .qr-box {
+      background: #fff;
+      padding: 10px;
+      border-radius: 14px;
+      width: 180px;
+      height: 180px;
+      margin: 0 auto 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .qr-box img {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .url-display {
+      background: #0f1420;
+      padding: 10px 14px;
+      border-radius: 8px;
+      color: #38bdf8;
+      font-size: 0.85rem;
+      word-break: break-all;
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      text-align: center;
+      margin-bottom: 14px;
+    }
+
+    .guide-box {
+      background: rgba(22, 29, 44, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 18px;
+      padding: 24px;
+      font-size: 0.9rem;
+      color: #cbd5e1;
+      line-height: 1.6;
+    }
+
+    .guide-box h3 {
+      color: #ff007f;
+      font-size: 1.1rem;
+      margin-bottom: 10px;
+    }
+
+    .guide-box ol {
+      margin-left: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1 class="title">🎯 SLINGSHOT OPERATOR HUB</h1>
+      <p class="subtitle">Motion-Sensor Slingshot & LED Screen Paintball System</p>
+    </div>
+
+    <div class="cards-grid">
+      <!-- Card 1: TV Display -->
+      <div class="card">
+        <div class="card-icon">📺</div>
+        <h2>LED Screen / TV Display</h2>
+        <p>Run this screen on the PC/laptop connected to your LED Wall via HDMI. Supports audio, 3D trajectory, laser reticle, and paint splatter.</p>
+        <a href="/tv.html" target="_blank" class="btn btn-tv">🚀 OPEN TV DISPLAY (HDMI)</a>
+      </div>
+
+      <!-- Card 2: Phone Slingshot Controller -->
+      <div class="card">
+        <div class="card-icon">📱</div>
+        <h2>Slingshot Phone Controller</h2>
+        <p>Scan this QR code with the phone mounted in the slingshot case. Works over local Wi-Fi.</p>
+        <div class="qr-box">
+          <img id="hubQr" alt="Scan QR Code">
+        </div>
+        <div style="margin-bottom: 8px;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <label style="font-size: 0.75rem; color:#94a3b8; font-weight:700;">NETWORK ADAPTER:</label>
+            <button id="refreshIpsBtn" style="background:transparent; border:none; color:#38bdf8; font-size:0.75rem; cursor:pointer; font-weight:700;">🔄 Refresh</button>
+          </div>
+          <select id="adapterSelect" style="width:100%; background:#141a29; color:#fff; border:1px solid #334155; padding:8px; border-radius:8px; margin-top:4px; font-family:inherit;"></select>
+          
+          <!-- Manual IP Override (Useful for Hotspots / Mac WiFi) -->
+          <div style="display:flex; gap:6px; margin-top:6px;">
+            <input id="customIpInput" type="text" placeholder="Or enter Mac IP manually (e.g. 172.20.10.2)" style="flex:1; background:#0b0f19; color:#fff; border:1px solid #334155; padding:6px 10px; border-radius:6px; font-size:0.75rem; font-family:inherit;">
+            <button id="applyCustomIpBtn" style="background:#2563eb; color:#fff; border:none; padding:6px 12px; border-radius:6px; font-size:0.75rem; cursor:pointer; font-weight:700;">Set</button>
+          </div>
+        </div>
+        <div id="hubUrl" class="url-display">Loading local URL...</div>
+        <a id="hubPhoneLink" href="/phone.html" target="_blank" class="btn" style="background: rgba(255,255,255,0.1); color:#fff;">
+          📱 Open Phone Controller on this PC
+        </a>
+      </div>
+    </div>
+
+    <!-- Quick Setup Guide -->
+    <div class="guide-box">
+      <h3>🛠️ Quick Event Setup Guide</h3>
+      <ol>
+        <li>Connect this PC to the LED screen via HDMI and click <b>"OPEN TV DISPLAY"</b> (press F11 for fullscreen).</li>
+        <li>Connect the phone to the <b>same Wi-Fi</b> or this PC's Mobile Hotspot.</li>
+        <li>Make sure the network adapter dropdown above has your <b>Wi-Fi / Hotspot IP</b> selected.</li>
+        <li>Open the camera on the phone and scan the QR code above.</li>
+        <li>Slot the phone into the wooden slingshot casing.</li>
+        <li>Have the guest take a selfie, pick a paint color, and tap <b>"LOCK & LOAD"</b>. A <b>live red laser dot</b> will track where the slingshot is pointing on the LED screen wall! (You can also press <b>'L'</b> on the TV display to test the red dot anytime).</li>
+        <li>Pull & release the rubber band — the accelerometer detects the snap shockwave and instantly splashes the paintball on the LED screen!</li>
+      </ol>
+    </div>
+  </div>
+
+  <script>
+    const adapterSelect = document.getElementById('adapterSelect');
+    const refreshIpsBtn = document.getElementById('refreshIpsBtn');
+    const customIpInput = document.getElementById('customIpInput');
+    const applyCustomIpBtn = document.getElementById('applyCustomIpBtn');
+    let availableIps = [];
+
+    async function loadInfo(chosenIp, forceRefreshList = false) {
+      try {
+        const url = chosenIp ? `/api/info?ip=${encodeURIComponent(chosenIp)}` : '/api/info';
+        const res = await fetch(url);
+        const data = await res.json();
+        
+        if (data.qrDataUrl) {
+          document.getElementById('hubQr').src = data.qrDataUrl;
+        }
+        document.getElementById('hubUrl').textContent = data.phoneHttpsUrl;
+        document.getElementById('hubPhoneLink').href = data.phoneHttpsUrl;
+
+        if (data.httpsPort === 443) {
+          // In cloud production, the public URL is universal
+          const adapterBox = document.getElementById('adapterSelect')?.parentElement;
+          if (adapterBox) adapterBox.style.display = 'none';
+        } else if (data.availableIps && (adapterSelect.children.length === 0 || forceRefreshList)) {
+          adapterSelect.innerHTML = '';
+          availableIps = data.availableIps;
+          availableIps.forEach(item => {
+            const opt = document.createElement('option');
+            opt.value = item.ip;
+            opt.textContent = `${item.name} (${item.ip})${item.isWifi ? ' ⭐ Wi-Fi/Hotspot' : ''}`;
+            if (item.ip === data.chosenIp) opt.selected = true;
+            adapterSelect.appendChild(opt);
+          });
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    adapterSelect.addEventListener('change', (e) => {
+      loadInfo(e.target.value);
+    });
+
+    refreshIpsBtn.addEventListener('click', () => {
+      loadInfo(null, true);
+    });
+
+    applyCustomIpBtn.addEventListener('click', () => {
+      const val = customIpInput.value.trim();
+      if (val) {
+        loadInfo(val);
+      }
+    });
+
+    loadInfo();
+  </script>
+</body>
+</html>

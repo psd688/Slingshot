@@ -1,0 +1,511 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body,
+html {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background-color: #010a24;
+  font-family: 'Outfit', sans-serif;
+  color: #fff;
+  user-select: none;
+}
+
+/* Canvases */
+#wallCanvas,
+#fxCanvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+#wallCanvas {
+  z-index: 1;
+}
+
+#fxCanvas {
+  z-index: 30;
+  pointer-events: none;
+}
+
+/* Clean Top Logos Branding Header */
+.branding-header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  padding: 3.2vh 3.5vw;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.logo-top-left-group {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1.6vh;
+  width: 19vw;
+  max-width: 380px;
+  min-width: 250px;
+  pointer-events: auto;
+}
+
+.logo-top-right {
+  display: flex;
+  align-items: flex-start;
+  pointer-events: auto;
+  perspective: 1000px;
+}
+
+.silver-logo {
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 0.4vh 1.8vh rgba(0, 0, 0, 0.65)) drop-shadow(0 0 2.4vh rgba(255, 255, 255, 0.16));
+}
+
+.brand-logo {
+  display: block;
+  user-select: none;
+  filter: drop-shadow(0 0.4vh 2vh rgba(0, 0, 0, 0.55));
+  transition: transform 0.25s ease;
+}
+
+.pi-logo {
+  height: 16vh;
+  width: auto;
+  object-fit: contain;
+  transform-style: preserve-3d;
+  will-change: transform;
+  animation: piRotate3D 5s ease-in-out infinite alternate;
+}
+
+@keyframes piRotate3D {
+  0% {
+    transform: perspective(800px) rotateY(-45deg);
+  }
+  100% {
+    transform: perspective(800px) rotateY(45deg);
+  }
+}
+
+.pixazon-logo {
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+}
+
+/* Center Top Headline Text */
+.center-screen-text {
+  position: absolute;
+  top: 3.6vh;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  pointer-events: none;
+  width: max-content;
+  max-width: 52vw;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.center-headline {
+  margin: 0;
+  padding: 0 1vw;
+  font-family: 'Outfit', sans-serif;
+  font-size: clamp(1.1rem, 2.1vw, 4.2vh);
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #ffffff;
+  background: linear-gradient(135deg, #ffffff 15%, #dbeafe 45%, #93c5fd 75%, #60a5fa 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0.6vh 2vh rgba(0, 0, 0, 0.75)) drop-shadow(0 0 2.5vh rgba(56, 189, 248, 0.45));
+  user-select: none;
+  line-height: 1.25;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.center-headline span {
+  display: block;
+  white-space: nowrap;
+}
+
+/* Live Red Dot Laser Sight HUD Badge */
+.laser-badge {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.laser-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #94a3b8;
+}
+
+.laser-status-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #64748b;
+  box-shadow: 0 0 4px rgba(255, 255, 255, 0.2);
+  transition: all 0.3s ease;
+}
+
+.laser-badge.active .laser-status-dot {
+  background: #ff0033;
+  box-shadow: 0 0 10px #ff0033, 0 0 20px #ff0033;
+  animation: laserPulseBlink 0.8s infinite alternate ease-in-out;
+}
+
+.laser-badge.active .laser-indicator {
+  color: #ff3366;
+  text-shadow: 0 0 10px rgba(255, 0, 51, 0.7);
+}
+
+@keyframes laserPulseBlink {
+  0% {
+    transform: scale(0.9);
+    opacity: 0.7;
+  }
+
+  100% {
+    transform: scale(1.3);
+    opacity: 1;
+  }
+}
+
+/* Real-time Live Red Dot Laser Sight on LED Screen */
+.aim-reticle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: clamp(100px, 9vmin, 160px);
+  height: clamp(100px, 9vmin, 160px);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  z-index: 40;
+}
+
+.aim-reticle.active {
+  opacity: 1;
+}
+
+/* The Live Red Dot */
+.laser-dot {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: clamp(16px, 1.6vmin, 26px);
+  height: clamp(16px, 1.6vmin, 26px);
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(circle, #ffffff 18%, #ff8099 38%, #ff0033 72%, #b3001e 100%);
+  box-shadow:
+    0 0 8px #ffffff,
+    0 0 16px #ff0033,
+    0 0 32px #ff0033,
+    0 0 55px rgba(255, 0, 51, 0.95),
+    0 0 85px rgba(255, 0, 51, 0.7);
+  animation: laserDotShimmer 1.5s infinite ease-in-out;
+}
+
+@keyframes laserDotShimmer {
+
+  0%,
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+    box-shadow: 0 0 8px #ffffff, 0 0 16px #ff0033, 0 0 32px #ff0033, 0 0 55px rgba(255, 0, 51, 0.95), 0 0 85px rgba(255, 0, 51, 0.7);
+  }
+
+  50% {
+    transform: translate(-50%, -50%) scale(1.15);
+    box-shadow: 0 0 12px #ffffff, 0 0 24px #ff0033, 0 0 45px #ff0033, 0 0 75px rgba(255, 0, 51, 1), 0 0 110px rgba(255, 0, 51, 0.85);
+  }
+}
+
+/* Horizontal Anamorphic Laser Flare Streak */
+.laser-flare-halo {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: clamp(120px, 13vmin, 210px);
+  height: 2px;
+  transform: translate(-50%, -50%);
+  background: linear-gradient(90deg, transparent, rgba(255, 0, 51, 0.8), #ffffff, rgba(255, 0, 51, 0.8), transparent);
+  box-shadow: 0 0 12px rgba(255, 0, 51, 0.9);
+  pointer-events: none;
+}
+
+/* Concentric Expanding Laser Pulse Ring */
+.laser-pulse-ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 22px;
+  height: 22px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  border: 2px solid rgba(255, 0, 51, 0.85);
+  box-shadow: 0 0 15px rgba(255, 0, 51, 0.7);
+  animation: laserPulseRipple 1.6s infinite ease-out;
+  pointer-events: none;
+}
+
+@keyframes laserPulseRipple {
+  0% {
+    width: 20px;
+    height: 20px;
+    opacity: 0.95;
+    border-width: 2px;
+  }
+
+  100% {
+    width: 80px;
+    height: 80px;
+    opacity: 0;
+    border-width: 1px;
+  }
+}
+
+/* Outer Tactical Circular Ring */
+.laser-ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: clamp(68px, 6.8vmin, 110px);
+  height: clamp(68px, 6.8vmin, 110px);
+  transform: translate(-50%, -50%);
+  border: 1.5px dashed rgba(255, 0, 51, 0.65);
+  border-radius: 50%;
+  animation: rotateReticle 8s linear infinite;
+  box-shadow: 0 0 18px rgba(255, 0, 51, 0.35);
+}
+
+@keyframes rotateReticle {
+  from {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+
+/* Tactical Crosshairs */
+.laser-crosshair {
+  position: absolute;
+  pointer-events: none;
+}
+
+.laser-ch-h {
+  top: 50%;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  transform: translateY(-50%);
+  background: linear-gradient(90deg, rgba(255, 0, 51, 0.75), transparent 36%, transparent 64%, rgba(255, 0, 51, 0.75));
+}
+
+.laser-ch-v {
+  top: 0;
+  left: 50%;
+  width: 1px;
+  height: 100%;
+  transform: translateX(-50%);
+  background: linear-gradient(180deg, rgba(255, 0, 51, 0.75), transparent 36%, transparent 64%, rgba(255, 0, 51, 0.75));
+}
+
+/* Tactical HUD Target Label */
+.reticle-label {
+  position: absolute;
+  bottom: -30px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 2px;
+  color: #ff3366;
+  white-space: nowrap;
+  text-shadow: 0 0 10px rgba(255, 0, 51, 0.9);
+  background: rgba(11, 14, 22, 0.9);
+  padding: 3px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 0, 51, 0.45);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
+}
+
+/* Idle Prompt / Corner QR Card */
+.idle-overlay {
+  position: absolute;
+  bottom: 24px;
+  right: 24px;
+  pointer-events: auto;
+  z-index: 20;
+  transition: all 0.4s ease;
+}
+
+.idle-card {
+  background: rgba(2, 12, 40, 0.9);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.65), 0 0 30px rgba(13, 72, 220, 0.35);
+  border-radius: 20px;
+  padding: 16px;
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  backdrop-filter: blur(12px);
+  max-width: 440px;
+}
+
+.idle-qr-container {
+  background: #fff;
+  padding: 6px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.idle-qr {
+  width: 110px;
+  height: 110px;
+  display: block;
+}
+
+.idle-info h2 {
+  font-size: 1.15rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: #38bdf8;
+  text-shadow: 0 0 15px rgba(56, 189, 248, 0.5);
+  margin-bottom: 4px;
+}
+
+.idle-info p {
+  font-size: 0.8rem;
+  color: #94a3b8;
+  margin-bottom: 6px;
+}
+
+.idle-url {
+  display: inline-block;
+  background: #020924;
+  padding: 4px 8px;
+  border-radius: 6px;
+  color: #38bdf8;
+  font-size: 0.75rem;
+  word-break: break-all;
+  margin-bottom: 8px;
+  border: 1px solid rgba(56, 189, 248, 0.35);
+}
+
+.slingshot-tip {
+  font-size: 0.72rem;
+  color: #e2e8f0;
+  line-height: 1.3;
+}
+
+/* Screen Flash on Impact */
+.screen-flash {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #fff;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.08s ease-out;
+  z-index: 30;
+}
+
+.screen-flash.active {
+  opacity: 0.35;
+}
+
+/* Bottom Right Corner: Clean Wall Button */
+.bottom-right-controls {
+  position: absolute;
+  bottom: clamp(16px, 2.5vh, 42px);
+  right: clamp(18px, 2.5vw, 48px);
+  z-index: 50;
+  pointer-events: auto;
+}
+
+.clear-wall-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: clamp(6px, 0.6vw, 12px);
+  background: rgba(3, 16, 52, 0.72);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  backdrop-filter: blur(12px);
+  color: #e2e8f0;
+  padding: clamp(8px, 1.1vh, 16px) clamp(14px, 1.3vw, 26px);
+  border-radius: clamp(10px, 1vw, 18px);
+  font-family: inherit;
+  font-size: clamp(0.78rem, 0.9vw, 1.25rem);
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45), 0 0 15px rgba(14, 75, 238, 0.2);
+  opacity: 0.82;
+  user-select: none;
+}
+
+.clear-wall-btn .btn-icon {
+  font-size: clamp(1rem, 1.2vw, 1.6rem);
+  transition: transform 0.25s ease;
+}
+
+.clear-wall-btn:hover {
+  opacity: 1;
+  background: rgba(14, 75, 238, 0.45);
+  border-color: #38bdf8;
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6), 0 0 25px rgba(56, 189, 248, 0.4);
+}
+
+.clear-wall-btn:hover .btn-icon {
+  transform: rotate(-15deg) scale(1.15);
+}
+
+.clear-wall-btn:active {
+  transform: translateY(0px) scale(0.97);
+}
+
+@media (max-width: 900px) {
+  .bottom-right-controls {
+    bottom: 16px;
+    right: 16px;
+  }
+
+  .clear-wall-btn {
+    padding: 8px 14px;
+    font-size: 0.75rem;
+  }
+}
