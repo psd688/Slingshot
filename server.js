@@ -64,6 +64,7 @@ const allIps = getAllIps();
 const PRIMARY_IP = allIps.length > 0 ? allIps[0].ip : 'localhost';
 const HTTP_PORT = process.env.PORT || 3000;
 const HTTPS_PORT = process.env.HTTPS_PORT || 3443;
+const GOOGLE_SHEETS_WEBHOOK_URL = process.env.GOOGLE_SHEETS_WEBHOOK_URL || 'https://script.google.com/macros/s/AKfycbzdV3Jg-F4E49r1GZ0c-5Xe2DahBLvQ6XC1hjMgjxwLYltpaHD3s-SXn0spsjQX4Ew/exec';
 
 // Detect whether running in cloud environment (Render, Railway, Heroku, etc.)
 const IS_CLOUD = Boolean(
@@ -77,6 +78,41 @@ const IS_CLOUD = Boolean(
 // In-memory gallery of recent splashes
 let splashHistory = [];
 const MAX_HISTORY = 40;
+
+// Asynchronous background logger for Google Sheets
+function logParticipantToGoogleSheets(item) {
+  if (!GOOGLE_SHEETS_WEBHOOK_URL) return;
+
+  try {
+    const payload = {
+      name: item.name || 'VIP Guest',
+      company: item.company || '',
+      message: item.message || '',
+      color: item.color || '#38bdf8',
+      image: item.image || null,
+      timestamp: item.timestamp || Date.now()
+    };
+
+    fetch(GOOGLE_SHEETS_WEBHOOK_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    })
+      .then(res => res.json())
+      .then(result => {
+        if (result && result.status === 'success') {
+          console.log(`📊 [Google Sheets] Saved row ${result.row} for "${payload.name}"`);
+        } else {
+          console.warn('⚠️ [Google Sheets] Response:', result);
+        }
+      })
+      .catch(err => {
+        console.error('❌ [Google Sheets Error]:', err.message);
+      });
+  } catch (err) {
+    console.error('❌ [Google Sheets Catch]:', err.message);
+  }
+}
 
 async function bootstrap() {
   const httpServer = http.createServer(app);
@@ -152,6 +188,9 @@ async function bootstrap() {
 
         ioHttp.emit('splash_hit', splashItem);
         if (ioHttps) ioHttps.emit('splash_hit', splashItem);
+
+        // Asynchronously save participant details & selfie to Google Sheets
+        logParticipantToGoogleSheets(splashItem);
       });
 
       socket.on('clear_board', () => {
